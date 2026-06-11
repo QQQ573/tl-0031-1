@@ -13,6 +13,7 @@ import { EnclosureDoor } from './scene/EnclosureDoor';
 import { RestPlatform } from './scene/RestPlatform';
 import { FeedingArea } from './scene/FeedingArea';
 import { InfoPoints } from './scene/InfoPoints';
+import { Panda } from './scene/Panda';
 import { StartScreen } from './ui/StartScreen';
 import { HUD } from './ui/HUD';
 import { InfoPanel } from './ui/InfoPanel';
@@ -41,6 +42,10 @@ const restPlatform = new RestPlatform(collision);
 const feedingArea = new FeedingArea(collision);
 const infoPoints = new InfoPoints();
 
+const panda1 = new Panda(new THREE.Vector3(2, 0, 0), Math.PI * 0.3);
+const panda2 = new Panda(new THREE.Vector3(-3, 0, 2.5), -Math.PI * 0.5);
+panda2.group.scale.setScalar(0.85);
+
 sceneMgr.scene.add(
   enclosure.group,
   climbingFrame.group,
@@ -48,7 +53,9 @@ sceneMgr.scene.add(
   enclosureDoor.group,
   restPlatform.group,
   feedingArea.group,
-  infoPoints.group
+  infoPoints.group,
+  panda1.group,
+  panda2.group
 );
 
 sceneMgr.camera.position.copy(PLAYER.INITIAL_POS);
@@ -71,20 +78,58 @@ const openInfo = (data: InfoPointData) => {
   if (deviceType === 'desktop') controller.exitLock();
 };
 
-sceneMgr.renderer.domElement.addEventListener('click', () => {
-  if (!started) return;
-  if (infoPanel.isVisible()) return;
-  if (deviceType === 'desktop' && document.pointerLockElement !== sceneMgr.renderer.domElement) {
-    controller.requestLock();
-    return;
+const tryOpenClosestInfo = (maxDistance: number = 5): boolean => {
+  const hit = infoPoints.getClosestToCenter(sceneMgr.camera, maxDistance);
+  if (hit) {
+    openInfo(hit);
+    return true;
   }
-  if (deviceType === 'desktop') {
-    const hit = infoPoints.getClosestToCenter(sceneMgr.camera, 5);
-    if (hit) {
-      openInfo(hit);
+  return false;
+};
+
+if (deviceType === 'desktop') {
+  document.addEventListener('keydown', (e) => {
+    if (!started || infoPanel.isVisible()) return;
+    if (e.code === 'KeyE' || e.code === 'Space') {
+      tryOpenClosestInfo(5);
     }
-  }
-});
+  });
+
+  const canvas = sceneMgr.renderer.domElement;
+  const pointerDownPos = { x: 0, y: 0, t: 0 };
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (!started) return;
+    pointerDownPos.x = e.clientX;
+    pointerDownPos.y = e.clientY;
+    pointerDownPos.t = performance.now();
+  });
+
+  canvas.addEventListener('mouseup', (e) => {
+    if (!started) return;
+    const dx = e.clientX - pointerDownPos.x;
+    const dy = e.clientY - pointerDownPos.y;
+    const dt = performance.now() - pointerDownPos.t;
+    const isClick = Math.sqrt(dx * dx + dy * dy) < 5 && dt < 300;
+    if (!isClick) return;
+
+    if (infoPanel.isVisible()) return;
+
+    const locked = document.pointerLockElement === canvas;
+    if (locked) {
+      tryOpenClosestInfo(5);
+    } else {
+      const nx = (e.clientX / window.innerWidth) * 2 - 1;
+      const ny = -(e.clientY / window.innerHeight) * 2 + 1;
+      const hit = infoPoints.pick(sceneMgr.camera, nx, ny);
+      if (hit && hit.distance < 8) {
+        openInfo(hit.data);
+        return;
+      }
+      controller.requestLock();
+    }
+  });
+}
 
 container.addEventListener('touchend', (e) => {
   if (!started || infoPanel.isVisible()) return;
@@ -99,7 +144,7 @@ container.addEventListener('touchend', (e) => {
   if (hit && hit.distance < 6) {
     openInfo(hit.data);
   }
-});
+}, { passive: true });
 
 controller.onPointerLockChange = (locked) => {
   if (!started) return;
@@ -125,12 +170,14 @@ function animate() {
     controller.update(delta);
     infoPoints.update(time);
     waterPool.update(time);
+    panda1.update(time, delta);
+    panda2.update(time, delta);
     hud.updateFPS(delta);
 
     if (deviceType === 'desktop' && !infoPanel.isVisible()) {
       const hover = infoPoints.getClosestToCenter(sceneMgr.camera, 4);
       if (hover) {
-        hud.showTooltip(`点击查看「${hover.title}」`);
+        hud.showTooltip(`点击 / 按 E 查看「${hover.title}」`);
       } else {
         hud.hideTooltip();
       }
@@ -153,5 +200,6 @@ function animate() {
       }
     });
     return Math.round(count);
-  }
+  },
+  INFO_POINTS
 };

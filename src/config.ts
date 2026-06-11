@@ -75,5 +75,13 @@ export const INFO_POINTS: InfoPointData[] = [
     icon: '🎋',
     description: '固定喂食区域，配备不锈钢食盆与饮水器。',
     feedingNote: '每日喂食 4 次：8:00 新鲜竹子，11:00 特制窝头（含玉米、大米、大豆），14:00 水果辅食，17:00 竹笋加餐。成年大熊猫日均进食约 20kg 竹子。'
+  },
+  {
+    id: 'panda',
+    position: new THREE.Vector3(2, 1.5, 0),
+    title: '大熊猫',
+    icon: '🐼',
+    description: '国家一级保护动物，中国特有物种。性情温和，喜爱独居，以竹子为主食。',
+    feedingNote: '成年大熊猫体长 1.2-1.8m，体重 80-120kg。每天花费 12-16 小时进食，消耗约 20-30kg 新鲜竹子。饲养员会密切监测其体重、粪便、精神状态，每年进行两次全面体检。'
   }
 ];
