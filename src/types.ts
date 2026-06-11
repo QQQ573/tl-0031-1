@@ -33,3 +33,30 @@ export interface JoystickState {
 }
 
 export type DeviceType = 'desktop' | 'mobile';
+
+export interface RouteStation {
+  id: string;
+  worldPos: { x: number; y: number; z: number };
+  radius: number;
+  hintText: string;
+}
+
+export interface RouteData {
+  version: string;
+  stations: RouteStation[];
+}
+
+export interface StationState {
+  id: string;
+  discovered: boolean;
+  panelOpened: boolean;
+  enteredTime: number | null;
+  stayTime: number;
+}
+
+export interface GuideProgress {
+  currentIndex: number;
+  completed: boolean;
+  stations: StationState[];
+}
+

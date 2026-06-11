@@ -6,6 +6,7 @@ import { SceneManager } from './core/SceneManager';
 import { CollisionSystem } from './core/CollisionSystem';
 import { FPSController } from './core/FPSController';
 import { MobileController } from './core/MobileController';
+import { FacilityGuide } from './core/FacilityGuide';
 import { Enclosure } from './scene/Enclosure';
 import { ClimbingFrame } from './scene/ClimbingFrame';
 import { WaterPool } from './scene/WaterPool';
@@ -66,15 +67,35 @@ const hud = new HUD(container, deviceType);
 const infoPanel = new InfoPanel(container);
 
 let started = false;
+let facilityGuide: FacilityGuide | null = null;
+
+FacilityGuide.load(sceneMgr.scene, sceneMgr.camera, container)
+  .then((guide) => {
+    facilityGuide = guide;
+    facilityGuide.onReset = () => {
+      controller.reset(PLAYER.INITIAL_POS.clone());
+      sceneMgr.camera.lookAt(0, PLAYER.HEIGHT, 0);
+      if (deviceType === 'desktop') controller.requestLock();
+    };
+  })
+  .catch((err) => {
+    console.warn('Failed to load guide route:', err);
+  });
 
 hud.onReset = () => {
   controller.reset(PLAYER.INITIAL_POS.clone());
   sceneMgr.camera.lookAt(0, PLAYER.HEIGHT, 0);
   if (deviceType === 'desktop') controller.requestLock();
+  if (facilityGuide) {
+    facilityGuide.getTracker().reset();
+  }
 };
 
 const openInfo = (data: InfoPointData) => {
   infoPanel.show(data);
+  if (facilityGuide) {
+    facilityGuide.markPanelOpened(data.id);
+  }
   if (deviceType === 'desktop') controller.exitLock();
 };
 
@@ -174,6 +195,16 @@ function animate() {
     panda2.update(time, delta);
     hud.updateFPS(delta);
 
+    if (facilityGuide) {
+      const yaw = controller.state.yaw;
+      facilityGuide.update(
+        { x: sceneMgr.camera.position.x, y: sceneMgr.camera.position.y, z: sceneMgr.camera.position.z },
+        yaw,
+        delta,
+        time
+      );
+    }
+
     if (deviceType === 'desktop' && !infoPanel.isVisible()) {
       const hover = infoPoints.getClosestToCenter(sceneMgr.camera, 4);
       if (hover) {
@@ -191,6 +222,7 @@ function animate() {
   sceneMgr,
   controller,
   collision,
+  facilityGuide: () => facilityGuide,
   getTriangles: () => {
     let count = 0;
     sceneMgr.scene.traverse((obj) => {

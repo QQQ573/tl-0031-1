@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "stations": [
+    {
+      "id": "enclosure-door",
+      "worldPos": { "x": 0, "y": 1.8, "z": 7.5 },
+      "radius": 2.5,
+      "hintText": "🚪 请前往内舍门，了解它的安全通道设计"
+    },
+    {
+      "id": "climbing-frame",
+      "worldPos": { "x": -5, "y": 2.2, "z": -2 },
+      "radius": 2.5,
+      "hintText": "🪵 下一站：攀爬架，看看它如何锻炼大熊猫体能"
+    },
+    {
+      "id": "panda",
+      "worldPos": { "x": 2, "y": 1.5, "z": 0 },
+      "radius": 2.5,
+      "hintText": "🐼 快看！大熊猫就在前方，了解它的日常作息"
+    },
+    {
+      "id": "water-pool",
+      "worldPos": { "x": 4, "y": 0.6, "z": -3 },
+      "radius": 2.5,
+      "hintText": "💧 前往戏水池，看看大熊猫夏日如何降温"
+    },
+    {
+      "id": "rest-platform",
+      "worldPos": { "x": 6, "y": 2.0, "z": 3 },
+      "radius": 2.5,
+      "hintText": "🛏️ 去休息平台，了解大熊猫午休的舒适环境"
+    },
+    {
+      "id": "feeding-area",
+      "worldPos": { "x": -6, "y": 0.8, "z": 4 },
+      "radius": 2.5,
+      "hintText": "🎋 终点站：喂食区，看看大熊猫的一日四餐食谱"
+    }
+  ]
+}
